@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Write(skills/**)",
+      "Shell(ls)",
+      "Shell(cat)",
+      "Shell(head)",
+      "Shell(tail)",
+      "Shell(wc)",
+      "Shell(find)",
+      "Shell(grep)",
+      "Shell(rg)",
+      "Shell(sed)",
+      "Shell(mkdir)"
+    ],
+    "deny": [
+      "Shell(git)",
+      "Shell(gh)",
+      "Shell(curl)",
+      "Shell(wget)",
+      "Shell(rm)",
+      "Read(.env*)",
+      "Write(.github/**)",
+      "Write(.cursor/**)",
+      "Write(prompts/**)",
+      "Write(scripts/**)",
+      "Write(.upstream-version)",
+      "Write(README.md)",
+      "Write(LICENSE)",
+      "Write(.gitignore)"
+    ]
+  }
+}
