@@ -45,10 +45,15 @@ for skill in "${skill_files[@]}"; do
 done
 
 if [[ "${SKIP_SKILLS_CLI:-}" != 1 ]]; then
-  listed="$(npx -y skills add . --list 2>&1 || true)"
+  listed="$(
+    NO_COLOR=1 FORCE_COLOR=0 npx -y skills add . --list 2>&1 \
+      | sed -E $'s/\x1B\\[[0-9;]*[A-Za-z]//g; s/\x1B\\(B//g' \
+      || true
+  )"
   for skill in "${skill_files[@]}"; do
     name="$(basename "$(dirname "$skill")")"
-    grep -qE "[[:space:]]$name[[:space:]]*$" <<<"$listed" || fail "skills CLI does not list '$name':"$'\n'"$listed"
+    grep -qE "(^|[[:space:]│])${name}([[:space:]│]|$)" <<<"$listed" \
+      || fail "skills CLI does not list '$name':"$'\n'"$listed"
   done
 fi
 
