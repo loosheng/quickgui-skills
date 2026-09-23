@@ -112,7 +112,7 @@ BEFORE="$(snapshot)"
 log "running cursor-agent"
 (
   cd "$REPO_ROOT"
-  cursor-agent -p --force --trust \
+  cursor-agent --print --force --trust \
     --model "$AGENT_MODEL" \
     --workspace "$REPO_ROOT" \
     --add-dir "$WORK_DIR" \
