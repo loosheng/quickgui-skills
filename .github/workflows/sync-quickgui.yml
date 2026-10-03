@@ -1,8 +1,6 @@
 name: Sync QuickGUI release
 
 on:
-  schedule:
-    - cron: "17 */6 * * *"
   workflow_dispatch:
     inputs:
       tag:
@@ -42,7 +40,6 @@ jobs:
           INPUT_TAG: ${{ inputs.tag }}
           INPUT_PREV: ${{ inputs.prev_tag }}
           INPUT_FULL: ${{ inputs.full }}
-          EVENT: ${{ github.event_name }}
         run: |
           current="$(tr -d '[:space:]' < .upstream-version 2>/dev/null || true)"
           tag="${INPUT_TAG:-$(gh api "repos/$UPSTREAM_REPO/releases/latest" -q .tag_name)}"
@@ -50,55 +47,37 @@ jobs:
           [[ "$INPUT_FULL" == "true" ]] && prev=""
           branch="sync/quickgui-$tag"
 
-          skip=false
-          if [[ "$EVENT" == "schedule" ]]; then
-            if [[ "$tag" == "$current" ]]; then
-              echo "Already synced to $tag"
-              skip=true
-            elif [[ -n "$(gh pr list --head "$branch" --state open --json number -q '.[].number')" ]]; then
-              echo "Open PR for $branch already exists"
-              skip=true
-            fi
-          fi
-
-          echo "current=$current tag=$tag prev=${prev:-<full>} skip=$skip"
+          echo "current=$current tag=$tag prev=${prev:-<full>}"
           {
             echo "tag=$tag"
             echo "prev=$prev"
             echo "branch=$branch"
-            echo "skip=$skip"
           } >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v7
-        if: steps.resolve.outputs.skip != 'true'
         with:
           node-version: 22
           package-manager-cache: false
 
       - name: Install Cursor CLI
-        if: steps.resolve.outputs.skip != 'true'
         run: |
           curl https://cursor.com/install -fsS | bash
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
 
       - name: Check Cursor CLI
-        if: steps.resolve.outputs.skip != 'true'
         run: cursor-agent --version
 
       - name: Summarize upstream with Cursor Agent (--print)
-        if: steps.resolve.outputs.skip != 'true'
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           GH_TOKEN: ${{ github.token }}
         run: scripts/sync.sh "${{ steps.resolve.outputs.tag }}" "${{ steps.resolve.outputs.prev }}"
 
       - name: Validate skills
-        if: steps.resolve.outputs.skip != 'true'
         run: scripts/validate.sh
 
       - name: Prepare pull request body
-        if: steps.resolve.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.resolve.outputs.tag }}
@@ -121,7 +100,6 @@ jobs:
           } > "$RUNNER_TEMP/pr-body.md"
 
       - name: Create pull request
-        if: steps.resolve.outputs.skip != 'true'
         uses: peter-evans/create-pull-request@v8
         with:
           branch: ${{ steps.resolve.outputs.branch }}

@@ -39,10 +39,10 @@ The agent loads `SKILL.md` first and opens individual reference files only when 
 
 ## How updates work
 
-`.github/workflows/sync-quickgui.yml` runs every 6 hours (or manually):
+`.github/workflows/sync-quickgui.yml` runs only when you start it from **Actions → Sync QuickGUI release → Run workflow** (no schedule):
 
-1. Reads the latest `egoist/quickgui` release and compares it with `.upstream-version`.
-2. If there is a new tag, `scripts/sync.sh` clones upstream at that tag, writes release notes and the diff since the previous synced tag into a temp context file, then runs `cursor-agent --model cursor-grok-4.6-high` with [`prompts/sync-skill.md`](prompts/sync-skill.md).
+1. Reads the latest `egoist/quickgui` release (or the tag you pass) and compares it with `.upstream-version`.
+2. `scripts/sync.sh` clones upstream at that tag, writes release notes and the diff since the previous synced tag into a temp context file, then runs `cursor-agent --print --model cursor-grok-4.6-high` with [`prompts/sync-skill.md`](prompts/sync-skill.md).
 3. The agent may only edit `skills/`; `.cursor/cli.json` denies git, gh, and writes elsewhere.
 4. `scripts/validate.sh` checks the result, and the workflow opens a pull request for review.
 
